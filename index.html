@@ -1,12 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Firebase Integration Example</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Hello World</h1>
-    <p>The current date and time is: 2026-03-25 09:38:30 UTC</p>
+    <h1>Welcome to Basha Data</h1>
+    <div id="products-list"></div>
+    <div id="cart"></div>
+    <div id="maintenance-message" style="display:none;">Maintenance mode is on.</div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Connection monitoring
+        firebase.database().ref().on('value', (snapshot) => {
+            console.log('Database connection is active');
+        }, (error) => {
+            console.error('Error connecting to database:', error);
+        });
+
+        // Maintenance mode handling
+        const maintenanceMode = false; // Change to true for maintenance
+        if (maintenanceMode) {
+            document.getElementById('maintenance-message').style.display = 'block';
+            return;
+        }
+
+        // Fetch products
+        database.ref('products').once('value').then((snapshot) => {
+            const products = snapshot.val();
+            for (const key in products) {
+                const product = products[key];
+                document.getElementById('products-list').innerHTML += `<div>${product.name} - ${product.price}</div>`;
+            }
+        }).catch((error) => {
+            console.error('Error fetching products:', error);
+        });
+
+        // Cart functionality
+        let cart = [];
+        function addToCart(product) {
+            cart.push(product);
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            document.getElementById('cart').innerHTML = 'Cart: ' + cart.length + ' items';
+        }
+    </script>
 </body>
 </html>
